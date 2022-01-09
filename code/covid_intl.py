@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import numpy as np
 
-path = 'D:\\corona'
+path = 'D:\\covid'
 os.chdir(path)
 
 url_confirmed = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
@@ -178,17 +178,22 @@ df_temp.rename(columns=({'confirmed': 'confirmed_rolling',
 
 df = pd.merge(df, df_temp, on=['country', 'rank_date'], validate='1:1')
 
-df['confirmed_rolling'] /= df['pop'] / 1e6
-df['deaths_rolling'] /= df['pop'] / 1e6
+for i in ['confirmed', 'confirmed_rolling', 'deaths', 'deaths_rolling']:
+    df[i] /= df['pop'] / 1e6
 
 
 df.sort_values(by=['country', 'rank_date'], inplace=True)
-df['delta_confirmed'] = df.groupby('country')['confirmed_rolling'].diff(7) / 7
-df['delta_deaths'] = df.groupby('country')['deaths_rolling'].diff(7) / 7
+df['delta_confirmed'] = df['confirmed_rolling'].diff(1)
+df['delta_confirmed_rolling'] = df.groupby(
+    'country')['confirmed_rolling'].diff(7) / 7
+df['delta_deaths'] = df['deaths'].diff(1)
+df['delta_deaths_rolling'] = df.groupby(
+    'country')['deaths_rolling'].diff(7) / 7
 
 df.drop('date2', axis=1, inplace=True)
 df_code = pd.read_csv('data/input/country_code.csv')
-df = df[['country', 'delta_confirmed', 'delta_deaths', 'date']]
+df = df[['country', 'delta_confirmed', 'delta_confirmed_rolling',
+         'delta_deaths', 'delta_deaths_rolling', 'date']]
 df = pd.merge(df, df_code, on='country', how='inner')
 df['date'] = pd.to_datetime(df['date'])
 df['start_date'] = df['start_date'] =pd.to_datetime('1/22/20')
