@@ -198,4 +198,4 @@ df['day_nr'] = (df['date'] - df['start_date']).dt.days + 1
 df.drop('start_date', axis=1, inplace=True)
 df['date'] = df['date'].astype(str)
 
-df.to_csv('data/output/country_data.csv')
+df.to_csv('data/output/country_data.csv', index=False)
